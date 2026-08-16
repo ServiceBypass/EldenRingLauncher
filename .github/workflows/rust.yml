@@ -16,8 +16,20 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build
-        run: cargo build --release
+      - name: Ensure CMake (install via Chocolatey) and build with MSVC dev env
+        shell: cmd
+        run: |
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+          REM Call Visual Studio vcvars to set up MSVC environment for this session.
+          REM Try BuildTools path first; adjust if your runner has a different VS edition.
+          if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
+            call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+          ) else if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" (
+            call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+          ) else (
+            echo "vcvars64.bat not found at expected locations; continuing without explicit call."
+          )
+          cargo build --release
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
