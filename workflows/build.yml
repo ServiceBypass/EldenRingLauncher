@@ -1,4 +1,4 @@
-name: Build Rust
+name: Build Rust Windows
 
 on:
   workflow_dispatch:
@@ -7,20 +7,31 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Rust
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable-x86_64-pc-windows-msvc
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
 
       - name: Build
+        shell: powershell
+        env:
+          CMAKE_GENERATOR: Visual Studio 17 2022
         run: cargo build --release
 
-      - name: Upload binary
+      - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: rust-build
-          path: target/release/
+          name: EldenRingLauncher-Windows
+          path: target/release/*.exe
