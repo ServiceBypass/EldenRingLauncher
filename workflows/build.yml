@@ -1,37 +1,21 @@
-name: Build Rust Windows
+name: Build Release
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Rust
+      - uses: actions/checkout@v3
+      
+      - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable-x86_64-pc-windows-msvc
-
-      - name: Setup MSVC
+      
+      - name: Install Visual Studio Build Tools
         uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Setup CMake
-        uses: lukka/get-cmake@latest
-
-      - name: Build
-        shell: powershell
-        env:
-          CMAKE_GENERATOR: Visual Studio 17 2022
+      
+      - name: Build Release
         run: cargo build --release
-
-      - name: Upload EXE
-        uses: actions/upload-artifact@v4
-        with:
-          name: EldenRingLauncher-Windows
-          path: target/release/*.exe
